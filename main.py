@@ -22,3 +22,18 @@ async def root():
         "status": "running",
         "endpoints": ["/", "/get_drift_score/"]
     }
+
+
+@app.post("/get_drift_score/{env_name}")
+async def get_drift_score(*,
+                          env_name:str="cartpole", 
+                          ed_model:str = "lof",
+                          transition:SATransition):
+    if ed_models.get(f"{env_name}") is not None:
+        if ed_models.get(f"{env_name}").get(f"{ed_model}") is not None:
+            ed_model = ed_models.get(f"{env_name}").get(f"{ed_model}")
+            return {"status": "Model has been loaded."}
+
+    else:
+        return {"status": "Environment is not supported."}
+    
