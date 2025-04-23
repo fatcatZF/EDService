@@ -66,7 +66,7 @@ async def root():
     return {
         "service": "Environment Drift Detection API",
         "status": "running",
-        "endpoints": ["/", "/get_drift_score/"]
+        "endpoints": ["/", "/upload-edmodel", "/get_drift_score/"]
     }
 
 
@@ -81,7 +81,7 @@ async def upload_edmodel(
     norm_config_file :UploadFile|None = None
 ):
     
-    env_dir = os.path.join("./models", env)
+    env_dir = os.path.join("./ed-models", env)
 
     # create folder if not exist
     if not os.path.exists(env_dir):
@@ -89,8 +89,7 @@ async def upload_edmodel(
 
     # save the uploaded file
     model_folder_path = os.path.join(env_dir, model_folder)
-    if not os.path.exists(model_folder_path):
-        os.makedirs(model_folder_path)
+    os.makedirs(model_folder_path)
 
     model_path = os.path.join(model_folder_path, "model.joblib")
     with open(model_path, 'wb') as buffer:
@@ -100,6 +99,18 @@ async def upload_edmodel(
         config_path = os.path.join(model_folder_path, "norm_config.json")
         with open(config_path, 'wb') as buffer:
             shutil.copyfileobj(norm_config_file.file, buffer)
+
+    # register model
+    if env not in model_registry:
+        model_registry[env] ={}
+    
+    model_registry[env][model_folder] = {
+        "model_path": model_path,
+    }
+
+    if norm_config_file is not None:
+        model_registry[env][model_folder]["norm_config_path"] = config_path
+
 
     return {
         "message": f"Model {model_folder} uploaded to environment {env}"
