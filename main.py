@@ -139,7 +139,8 @@ async def online_predict_drift_score(
         return {"info": f"No f{model_name} for f{env}"}
     
     model_path = model_folder_info["model_path"]
-    model_folder_path = os.path.dirname(model_path)
+    norm_config_path = model_folder_info.get("norm_config_path", None)
+    
 
     # Check if the model has been loaded in memory
     model = ed_models.get(f"{env}_{model_name}_model", None)
@@ -150,8 +151,9 @@ async def online_predict_drift_score(
         model = joblib.load(model_path)
         ed_models[f"{env}_{model_name}_model"] = model 
         # Check if the normalization configuration exisits
-        norm_config_path = os.path.join(model_folder_path, "norm_config.json")
-        if os.path.exists(norm_config_path):
+        #norm_config_path = os.path.join(model_folder_path, "norm_config.json")
+        
+        if norm_config_path is not None:
             with open(norm_config_path, 'r') as f:
                 norm_config = json.load(f) 
             mu = norm_config["mu"]
