@@ -1,5 +1,5 @@
-from fastapi import FastAPI, HTTPException
-from fastapi import UploadFile, File
+from fastapi import FastAPI
+from fastapi import UploadFile
 from pydantic import BaseModel
 
 from contextlib import asynccontextmanager
