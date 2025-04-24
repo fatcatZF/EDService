@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi import UploadFile, File
 from pydantic import BaseModel
 
+from contextlib import asynccontextmanager
+
 import shutil
 
 import joblib
@@ -18,14 +20,15 @@ ed_models = {}
 
 
 
-app = FastAPI(title="Environment Drift Detection Service")
+
 
 
 REGISTRY_PATH = "./model_registry.json"
 
 
-@app.on_event("startup")
-def load_model_registry():
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     global model_registry 
     if os.path.exists(REGISTRY_PATH):
         try:
@@ -39,13 +42,43 @@ def load_model_registry():
         model_registry = {}
     print("Model registry loaded.")
 
+    yield
 
-
-@app.on_event("shutdown")
-def save_model_registry():
     with open(REGISTRY_PATH, "w") as f:
         json.dump(model_registry, f)
     print("💾 Model registry saved.")
+
+    ed_models.clear()
+
+
+app = FastAPI(title="Environment Drift Detection Service",
+              lifespan=lifespan)
+
+
+
+
+#@app.on_event("startup")
+#def load_model_registry():
+#    global model_registry 
+#    if os.path.exists(REGISTRY_PATH):
+#        try:
+#            with open(REGISTRY_PATH, 'r') as f:
+#                model_registry = json.load(f)
+#        except json.JSONDecodeError:
+#            print("model_registry.json is invalid. Starting with empty registry.")
+#            model_registry = {}
+#            
+#    else:
+#        model_registry = {}
+#    print("Model registry loaded.")
+
+
+
+#@app.on_event("shutdown")
+#def save_model_registry():
+#    with open(REGISTRY_PATH, "w") as f:
+#        json.dump(model_registry, f)
+#    print("💾 Model registry saved.")
 
 
 
