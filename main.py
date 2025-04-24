@@ -69,6 +69,13 @@ class SASingleTransition(BaseModel):
 
 
 
+class SABatchTransition(BaseModel):
+    # A batch of transition of a Single Agent RL Environment
+    sts: list[list[float]] # current state s_t
+    ats: list[list[float]]  # action a_t 
+    stplus1s: list[list[float]] # next state s_t
+    rtplus1s: list[list[float]] # reward at the next timestamp
+    ts: list[datetime]|None = None
 
 
 
@@ -191,6 +198,79 @@ async def online_predict_drift_score(
         response["timestamp"] = t
 
     return response
+
+
+
+
+@app.post("/batch_predict_drift_score/{env}")
+async def batch_predict_drift_score(
+    env: str,
+    model_name: str,
+    transitions: SABatchTransition
+):
+    response = {}
+    # Check if the environment is supported and the model exists
+    if model_registry.get(env, None) is None:
+        return {"info": f"There are no ed models for {env}"}
+    
+    model_folder_info = model_registry[env].get(model_name, None)
+
+    if model_folder_info is None:
+        return {"info": f"No f{model_name} for f{env}"}
+    
+    model_path = model_folder_info["model_path"]
+    norm_config_path = model_folder_info.get("norm_config_path", None)
+    
+
+    # Check if the model has been loaded in memory
+    model = ed_models.get(f"{env}_{model_name}_model", None)
+    mu = ed_models.get(f"{env}_{model_name}_mu", None)
+    sigma = ed_models.get(f"{env}_{model_name}_sigma", None)
+
+    if model is None:
+        model = joblib.load(model_path)
+        ed_models[f"{env}_{model_name}_model"] = model 
+        # Check if the normalization configuration exisits
+        #norm_config_path = os.path.join(model_folder_path, "norm_config.json")
+        
+        if norm_config_path is not None:
+            with open(norm_config_path, 'r') as f:
+                norm_config = json.load(f) 
+            mu = norm_config["mu"]
+            sigma = norm_config["sigma"]
+            ed_models[f"{env}_{model_name}_mu"] = mu 
+            ed_models[f"{env}_{model_name}_sigma"] = sigma
+    
+
+    
+
+    sts = np.array(transitions.sts)
+    stplus1s = np.array(transitions.stplus1s)
+    ats = np.array(transitions.ats)
+
+    xs = np.concatenate([sts, stplus1s], axis=1)
+    xs = np.concatenate([xs, ats], axis=1).astype(np.float32)
+
+    drift_scores = - model.decision_function(xs)
+
+    response["drift_scores"] = drift_scores.tolist()
+
+    if mu is not None and sigma is not None:
+        response["drift_scores_normalized"] = ((drift_scores-mu)/(sigma+1e-6)).tolist()
+
+    ts = transitions.ts
+    print(ts)
+    if ts is not None:
+        response["timestamps"] = ts
+
+    return response
+
+
+
+
+
+
+
 
 
 
