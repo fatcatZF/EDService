@@ -10,14 +10,14 @@ import joblib
 import os 
 import json
 
+from datetime import datetime
+
 import numpy as np 
 
 
 
 
 ed_models = {}
-
-
 
 
 
@@ -57,31 +57,6 @@ app = FastAPI(title="Environment Drift Detection Service",
 
 
 
-#@app.on_event("startup")
-#def load_model_registry():
-#    global model_registry 
-#    if os.path.exists(REGISTRY_PATH):
-#        try:
-#            with open(REGISTRY_PATH, 'r') as f:
-#                model_registry = json.load(f)
-#        except json.JSONDecodeError:
-#            print("model_registry.json is invalid. Starting with empty registry.")
-#            model_registry = {}
-#            
-#    else:
-#        model_registry = {}
-#    print("Model registry loaded.")
-
-
-
-#@app.on_event("shutdown")
-#def save_model_registry():
-#    with open(REGISTRY_PATH, "w") as f:
-#        json.dump(model_registry, f)
-#    print("💾 Model registry saved.")
-
-
-
 
 
 class SASingleTransition(BaseModel):
@@ -89,6 +64,8 @@ class SASingleTransition(BaseModel):
     st: list[float] # current state s_t
     at: list[float]  # action a_t 
     stplus1: list[float] # next state s_t
+    rtplus1: list[float] # reward at the next timestamp
+    t: datetime|None = None
 
 
 
@@ -197,6 +174,7 @@ async def online_predict_drift_score(
     st = np.array(transition.st)
     stplus1 = np.array(transition.stplus1)
     at = np.array(transition.at)
+    
     x = np.concatenate([st, stplus1-st]).reshape(1, -1)
     x = np.concatenate([x, at.reshape(1, -1)], axis=1).astype(np.float32)
 
@@ -207,7 +185,17 @@ async def online_predict_drift_score(
     if mu is not None and sigma is not None:
         response["drift_score_normalized"] = (drift_score-mu)/(sigma+1e-6)
 
+    t = transition.t
+    print(t)
+    if t is not None:
+        response["timestamp"] = t
+
     return response
+
+
+
+
+
 
 
 if __name__ == "__main__":
