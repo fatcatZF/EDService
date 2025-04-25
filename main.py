@@ -65,7 +65,7 @@ class SASingleTransition(BaseModel):
     at: list[float]  # action a_t 
     stplus1: list[float] # next state s_t
     rtplus1: list[float] # reward at the next timestamp
-    t: datetime|None = None
+    t: datetime|int|None = None
 
 
 
@@ -75,7 +75,7 @@ class SABatchTransition(BaseModel):
     ats: list[list[float]]  # action a_t 
     stplus1s: list[list[float]] # next state s_t
     rtplus1s: list[list[float]] # reward at the next timestamp
-    ts: list[datetime]|None = None
+    ts: list[datetime]|list[int]|None = None
 
 
 
