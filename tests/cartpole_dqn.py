@@ -49,24 +49,24 @@ scores_12, scores_normalized_12 = online_predict_drift_score(env1, env2,
 
 
 
-scores_13, scores_normalized_13 = online_predict_drift_score(env1, env3, 
-                                                       agent, 
-                                                       ONLINE_URL, 
-                                                        model_name = "lof")
+#scores_13, scores_normalized_13 = online_predict_drift_score(env1, env3, 
+#                                                       agent, 
+#                                                       ONLINE_URL, 
+#                                                        model_name = "lof")
 
 
 
-scores_12, scores_normalized_12 = batch_predict_drift_score(env1, env2, 
-                                                       agent, 
-                                                       BATCH_URL, 
-                                                        model_name = "lof")
+#scores_12, scores_normalized_12 = batch_predict_drift_score(env1, env2, 
+#                                                       agent, 
+#                                                       BATCH_URL, 
+#                                                        model_name = "lof")
 
 
 
-scores_13, scores_normalized_13 = batch_predict_drift_score(env1, env3, 
-                                                       agent, 
-                                                       BATCH_URL, 
-                                                        model_name = "lof")
+#scores_13, scores_normalized_13 = batch_predict_drift_score(env1, env3, 
+#                                                      agent, 
+#                                                       BATCH_URL, 
+#                                                        model_name = "lof")
 
 
 
