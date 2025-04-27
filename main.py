@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi import UploadFile
 from pydantic import BaseModel
 
+from fastapi.staticfiles import StaticFiles
+
 from contextlib import asynccontextmanager
 
 import shutil
@@ -20,7 +22,7 @@ import numpy as np
 ed_models = {}
 
 
-
+response_buffer = []
 
 
 REGISTRY_PATH = "./model_registry.json"
@@ -55,7 +57,7 @@ app = FastAPI(title="Environment Drift Detection Service",
               lifespan=lifespan)
 
 
-
+app.mount("/dashboard", StaticFiles(directory="dashboard"), name="dashboard")
 
 
 
@@ -145,6 +147,7 @@ async def online_predict_drift_score(
     model_name: str,
     transition: SASingleTransition
 ):
+    
     response = {}
     # Check if the environment is supported and the model exists
     if model_registry.get(env, None) is None:
@@ -196,6 +199,9 @@ async def online_predict_drift_score(
     print(t)
     if t is not None:
         response["timestamp"] = t
+
+    response_buffer.append(response)
+    
 
     return response
 
@@ -268,8 +274,23 @@ async def batch_predict_drift_score(
 
 
 
-
-
+@app.get("/current_drift_score")
+async def current_drift_score(i: int|None = None):
+    print(response_buffer)
+    if not response_buffer:
+        return {}
+    
+    if i is not None:
+        if 0 <=i < len(response_buffer):
+            return {"length": len(response_buffer),
+                    "body": response_buffer[i]} 
+        
+        else:
+            return {"error": "Index out of range"}
+        
+    else: 
+        return {"length": len(response_buffer),
+                    "body": response_buffer[-1]}  
 
 
 
