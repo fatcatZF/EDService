@@ -23,7 +23,7 @@ args = parser.parse_args()
 
 ONLINE_URL = "http://localhost:8000/online_predict_drift_score/cartpole"
 
-BATCH_URL = "http://localhost:8000/batch_predict_drift_score/cartpole"
+#BATCH_URL = "http://localhost:8000/batch_predict_drift_score/cartpole"
 
 
 # Create Environments
