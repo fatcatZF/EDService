@@ -1,9 +1,15 @@
 import requests
+import time 
+import webbrowser
 
 
 
 def online_predict_drift_score(undrifted_env, drifted_env, agent, url, 
                    model_name = "lof"):
+    
+    # Open the dashboard page first
+    dashboard_url = "http://localhost:8000/dashboard/monitor.html"
+    webbrowser.open(dashboard_url)
     
     # Query parameter sent to API endpoint
     params = {
@@ -24,6 +30,8 @@ def online_predict_drift_score(undrifted_env, drifted_env, agent, url,
         action_t, _state = agent.predict(obs_t, deterministic=True)
 
         obs_tplus1, r_tplus1, terminated, truncated, info = env_current.step(action_t)
+
+        time.sleep(0.2)
 
         request_body = {
             "st": obs_t.tolist(),

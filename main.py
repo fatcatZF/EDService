@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi import UploadFile
 from pydantic import BaseModel
 
@@ -21,8 +21,7 @@ import numpy as np
 
 ed_models = {}
 
-
-response_buffer = []
+websocket_clients = []
 
 
 REGISTRY_PATH = "./model_registry.json"
@@ -200,7 +199,9 @@ async def online_predict_drift_score(
     if t is not None:
         response["timestamp"] = t
 
-    response_buffer.append(response)
+    
+    await broadcast_payload(response)
+
     
 
     return response
@@ -274,23 +275,36 @@ async def batch_predict_drift_score(
 
 
 
-@app.get("/current_drift_score")
-async def current_drift_score(i: int|None = None):
-    print(response_buffer)
-    if not response_buffer:
-        return {}
-    
-    if i is not None:
-        if 0 <=i < len(response_buffer):
-            return {"length": len(response_buffer),
-                    "body": response_buffer[i]} 
-        
-        else:
-            return {"error": "Index out of range"}
-        
-    else: 
-        return {"length": len(response_buffer),
-                    "body": response_buffer[-1]}  
+
+
+@app.websocket("/ws/response")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    websocket_clients.append(websocket)
+    try:
+        while True: 
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        websocket_clients.remove(websocket)
+
+
+
+
+async def broadcast_payload(payload):
+    disconnected_clients = []
+    for ws in websocket_clients:
+        try: 
+            await ws.send_text(json.dumps(payload))
+        except WebSocketDisconnect:
+            disconnected_clients.append(ws)
+    for ws in disconnected_clients:
+        websocket_clients.remove(ws) 
+
+
+
+
+
+       
 
 
 
