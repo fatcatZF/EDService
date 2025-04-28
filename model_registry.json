@@ -1,2 +1,1 @@
-{"cartpole": {"lof": {"model_path": "./ed-models/cartpole/lof/model.joblib", 
-"norm_config_path": "./ed-models/cartpole/lof/norm_config.json"}}}
+{"cartpole": {"lof": {"model_path": "./ed-models/cartpole/lof/model.joblib", "norm_config_path": "./ed-models/cartpole/lof/norm_config.json"}}}

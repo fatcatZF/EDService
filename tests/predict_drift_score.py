@@ -48,7 +48,7 @@ def online_predict_drift_score(undrifted_env, drifted_env, agent, url,
 
         score = response_data.get("drift_score", None)
         score_normalized = response_data.get("drift_score_normalized", None)
-        print(score_normalized)
+        
 
         scores.append(score)
         scores_normalized.append(score_normalized)
