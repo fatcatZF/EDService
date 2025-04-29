@@ -35,9 +35,9 @@ def online_predict_drift_score(undrifted_env, drifted_env, agent, url,
 
         request_body = {
             "st": obs_t.tolist(),
-            "at": [action_t.item()],
+            "at": action_t.item(),
             "stplus1": obs_tplus1.tolist(),
-            "rtplus1": [float(r_tplus1)],
+            "rtplus1": float(r_tplus1),
             "t": t
         }
 
@@ -48,6 +48,7 @@ def online_predict_drift_score(undrifted_env, drifted_env, agent, url,
 
         score = response_data.get("drift_score", None)
         score_normalized = response_data.get("drift_score_normalized", None)
+        
 
         scores.append(score)
         scores_normalized.append(score_normalized)
