@@ -77,6 +77,8 @@ tensorboard==2.19.0
 tensorboard-data-server==0.7.2
 threadpoolctl==3.6.0
 torch==2.6.0
+torchensemble==0.2.0
+torchvision==0.21.0
 tqdm==4.67.1
 typer==0.15.2
 typing-inspection==0.4.0
