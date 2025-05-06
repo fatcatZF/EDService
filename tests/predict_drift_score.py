@@ -5,7 +5,7 @@ import webbrowser
 
 
 def online_predict_drift_score(undrifted_env, drifted_env, agent, url, 
-                   model_name = "lof"):
+                   model_name = "edsvm"):
     
     # Open the dashboard page first
     dashboard_url = "http://localhost:8000/dashboard/monitor.html"
@@ -16,8 +16,8 @@ def online_predict_drift_score(undrifted_env, drifted_env, agent, url,
         "model_name": model_name
     }
 
-    undrifted_steps = 3000
-    drifted_steps = 3000
+    undrifted_steps = 50
+    drifted_steps = 50
     total_steps = undrifted_steps + drifted_steps
 
     scores = []
